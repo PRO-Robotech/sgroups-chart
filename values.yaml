@@ -132,21 +132,15 @@ server:
       #     ca-files:
       #       - "/opt/h-bf/sgroups/tls/ca.crt"
 
-  migrationContainer:
+  rbacproxy:
+    enabled: true
     # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
     image:
-      repository: prorobotech/sgroups.goose
+      repository: gcr.io/kubebuilder/kube-rbac-proxy
       # This sets the pull policy for images.
       pullPolicy: IfNotPresent
       # Overrides the image tag whose default is the chart appVersion.
-      tag: ""
-
-    command:
-      - /app/bin/goose
-      - -table=sgroups_db_ver
-      - postgres
-      - $(DATABASE_CONNECTION_URL)
-      - up
+      tag: "v0.16.0"
 
     securityContext:
       allowPrivilegeEscalation: false
@@ -168,25 +162,21 @@ server:
         ephemeral-storage: 50Mi
         memory: 128Mi
 
-  rbacproxy:
-    enabled: true
+  migrationContainer:
     # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
     image:
-      repository: gcr.io/kubebuilder/kube-rbac-proxy
+      repository: prorobotech/sgroups.goose
       # This sets the pull policy for images.
       pullPolicy: IfNotPresent
       # Overrides the image tag whose default is the chart appVersion.
-      tag: "v0.16.0"
+      tag: ""
 
-    args:
-      - --client-ca-file=/opt/h-bf/sgroups/tls/ca.crt
-      - --ignore-paths=/v2/*
-      - --secure-listen-address=0.0.0.0:9006
-      - --tls-cert-file=/opt/h-bf/sgroups/tls/tls.crt
-      - --tls-private-key-file=/opt/h-bf/sgroups/tls/tls.key
-      - --upstream=https://sgroups-server:9008
-      - --upstream-force-h2c=true
-      - --v=10
+    command:
+      - /app/bin/goose
+      - -table=sgroups_db_ver
+      - postgres
+      - $(DATABASE_CONNECTION_URL)
+      - up
 
     securityContext:
       allowPrivilegeEscalation: false

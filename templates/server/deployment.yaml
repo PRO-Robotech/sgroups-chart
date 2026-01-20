@@ -95,10 +95,14 @@ spec:
           {{- end }}
           image: "{{ $rbacproxy.image.repository }}:{{ $rbacproxy.image.tag }}"
           imagePullPolicy: {{ $rbacproxy.image.pullPolicy }}
-          {{- with $rbacproxy.args }}
           args:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+            - --client-ca-file=/opt/h-bf/sgroups/tls/ca.crt
+            - --tls-cert-file=/opt/h-bf/sgroups/tls/tls.crt
+            - --tls-private-key-file=/opt/h-bf/sgroups/tls/tls.key
+            - --ignore-paths=/v2/*
+            - --secure-listen-address=0.0.0.0:{{ $server.service.ports.ingress }}
+            - --upstream=https://sgroups-server:{{ $server.service.ports.server }}
+            - --upstream-force-h2c=true
           ports:
             - name: ingress
               containerPort: {{ $server.service.ports.ingress }}
