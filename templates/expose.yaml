@@ -2,6 +2,8 @@
 {{- $tls      := $expose.tls -}}
 {{- $istio    := $expose.istio -}}
 {{- $ingress  := $expose.ingress -}}
+{{- $server   := .Values.server -}}
+{{- $web      := .Values.web -}}
 
 {{- if $expose.enabled -}}
   {{ if eq $expose.resourceType "istio" }}
@@ -104,9 +106,9 @@ spec:
             host: {{ include "sgroups-chart.fullname" . }}-server
             port:
               {{- if $server.rbacproxy.enabled }}
-              number: {{ .Values.server.service.ports.rbacproxy }}
+              number: {{ $server.service.ports.rbacproxy }}
               {{- else }}
-              number: {{ .Values.server.service.ports.server }}
+              number: {{ $server.service.ports.server }}
               {{- end }}
   {{ else if eq $expose.resourceType "ingress" }}
 ---
@@ -173,9 +175,9 @@ spec:
                 name: {{ include "sgroups-chart.fullname" . }}-server
                 port:
                   {{- if $server.rbacproxy.enabled -}}
-                  number: {{ .Values.server.service.ports.rbacproxy }}
+                  number: {{ $server.service.ports.rbacproxy }}
                   {{- else -}}
-                  number: {{ .Values.server.service.ports.server }}
+                  number: {{ $server.service.ports.server }}
                   {{- end }}
   {{- end }}
 {{- end }}

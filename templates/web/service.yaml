@@ -1,5 +1,5 @@
 {{- $web := .Values.web -}}
-{{- if $webr.enabled }}
+{{- if $web.enabled }}
 ---
 apiVersion: v1
 kind: Service

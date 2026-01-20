@@ -1,17 +1,17 @@
 {{- $server         := .Values.server -}}
 {{- $migration      := $server.migrationContainer -}}
 {{- $rbacproxy      := $server.rbacproxy -}}
-{{- $certSource     := .Values.tls.certSource -}}
+{{- $certSource     := .Values.internalTLS.certSource -}}
 {{- $certSecretName := "" -}}
 {{- if eq $certSource "certmanager" }}
 {{- $certSecretName = printf "%s-server" (include "sgroups-chart.fullname" .) -}}
 {{- else if eq $certSource "secret" }}
-{{- $certSecretName = .Values.tls.secret.server.secretName -}}
+{{- $certSecretName = .Values.internalTLS.secret.server.secretName -}}
 {{- end }}
-{{- $configTLS      := $server.authn.tls -}}
-{{- $certFile       := (index $configTLS "cert-file" | default "/opt/h-bf/sgroups/tls/tls.crt") -}}
-{{- $keyFile        := (index $configTLS "key-file" | default "/opt/h-bf/sgroups/tls/tls.key") -}}
-{{- $clientCa       := (index $authnConfig.tls.client "ca-files" | default (list "/opt/h-bf/sgroups/tls/ca.crt")) -}}
+{{- $configTLS      := (dig "authn" "tls" (dict) $server.config) -}}
+{{- $certFile       := (dig "cert-file" "/opt/h-bf/sgroups/tls/tls.crt" $configTLS) -}}
+{{- $keyFile        := (dig "key-file" "/opt/h-bf/sgroups/tls/tls.key" $configTLS) -}}
+{{- $clientCa       := (dig "client" "ca-files" "/opt/h-bf/sgroups/tls/ca.crt" $configTLS) -}}
 {{- $sa     := $server.serviceAccount -}}
 {{- $saName := default (printf "%s-server" (include "sgroups-chart.fullname" .)) $sa.name -}}
 {{- if not $sa.create }}
@@ -67,7 +67,7 @@ spec:
             - /app/bin/sgroups
           args:
             - --config=/etc/sgroups/config.yaml
-          {{- with $web.env }}
+          {{- with $server.env }}
           env:
             {{ range $key, $value := . }}
             - name: {{ $key }}

@@ -1,7 +1,10 @@
 {{- $server       := .Values.server -}}
-{{- $config       := $server.config -}}
-{{- $authnConfig  := $config.authn -}}
-{{- $clientCa     := (index $authnConfig.tls.client "ca-files" | default list) -}}
+{{- $config       := $server.config | default dict -}}
+{{- $authnConfig  := $config.authn | default dict -}}
+{{- $certFile     := (dig "tls" "cert-file" "/opt/h-bf/sgroups/tls/tls.crt" $authnConfig) -}}
+{{- $keyFile      := (dig "tls" "key-file" "/opt/h-bf/sgroups/tls/tls.key" $authnConfig) -}}
+{{- $clientCa     := (dig "tls" "client" "ca-files" (list "/opt/h-bf/sgroups/tls/ca.crt") $authnConfig) -}}
+{{- $clientVerify := (dig "tls" "client" "verify" "skip" $authnConfig) -}}
 
 {{- if $server.enabled }}
 ---
@@ -33,10 +36,10 @@ data:
     {{- else }}
       type: "tls"
       tls:
-        cert-file: "/opt/h-bf/sgroups/tls/tls.crt"
-        key-file: "/opt/h-bf/sgroups/tls/tls.key"
+        cert-file: {{ $certFile }}
+        key-file: {{ $keyFile }}
         client:
-          verify: {{ $authnConfig.tls.client.verify | default "skip" }}
+          verify: {{ $clientVerify }}
           ca-files: {{ $clientCa | toYaml }}
     {{- end }}
 {{- end }}
