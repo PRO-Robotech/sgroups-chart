@@ -1,29 +1,46 @@
-{{- with .Values.appSpec.applications.server }}
-  {{- if .enabled }}
+{{- if and .Values.server.enabled (eq .Values.internalTLS.certSource "certmanager") }}
+
+{{- $certmanager  := .Values.internalTLS.certmanager -}}
+{{- $extIssuer    := $certmanager.existingIssuer -}}
+{{- $issuerKind   := "Issuer" -}}
+{{- $issuerName   := (include "sgroups-chart.fullname" .) -}}
+
+{{- if and $extIssuer.kind $extIssuer.name }}
+  {{- $issuerKind   = $extIssuer.kind -}}
+  {{- $issuerName   = $extIssuer.name -}}
+{{- end }}
+
+---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ $.Release.Name }}-{{ .volumes.certificate.volume.name }}
-  namespace: {{ $.Release.Namespace }}
+  name: {{ include "sgroups-chart.fullname" . }}-server
+  labels:
+    app.kubernetes.io/component: server
+    {{- include "sgroups-chart.labels" . | nindent 4 }}
 spec:
-  commonName: {{ $.Release.Name }}-{{ .name }}
+  issuerRef:
+    group: cert-manager.io
+    kind: {{ $issuerKind }}
+    name: {{ $issuerName }}
   dnsNames:
-    - {{ $.Release.Name }}-{{ .name }}
-    - {{ $.Release.Name }}-{{ .name }}.{{ $.Release.Namespace }}
-    - {{ $.Release.Name }}-{{ .name }}.{{ $.Release.Namespace }}.svc
-    {{ if $.Values.certificates.extraDnsNames }}
-    {{ range $.Values.certificates.extraDnsNames }}
+    - "{{ include "sgroups-chart.fullname" . }}-server"
+    - "{{ include "sgroups-chart.fullname" . }}-server.{{ .Release.Namespace }}"
+    - "{{ include "sgroups-chart.fullname" . }}-server.{{ .Release.Namespace }}.svc"
+    {{ if $certmanager.extraDnsNames }}
+    {{ range $certmanager.extraDnsNames }}
     - {{ . }}
     {{ end }}
     {{ end }}
-  {{ with $.Values.certificates.extraIPAddresses }}
+  {{ with $certmanager.extraIPAddresses }}
   ipAddresses:
     {{ . | toYaml | nindent 4 }}
   {{ end }}
-  issuerRef:
-    {{ $.Values.certificates.issuer | toYaml | nindent 4 }}
+  commonName: "{{ .Release.Namespace }}-server"
   usages:
     - server auth
-  secretName: {{ $.Release.Name }}-{{ .volumes.certificate.volume.name }}
-  {{- end }}
+    - client auth
+    - signing
+    - key encipherment
+  secretName: {{ include "sgroups-chart.fullname" . }}-server
 {{- end }}

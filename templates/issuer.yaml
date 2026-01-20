@@ -1,0 +1,44 @@
+{{- $extIssuer    := .Values.internalTLS.certmanager.existingIssuer -}}
+
+{{- if and (eq .Values.internalTLS.certSource "certmanager") (and not $extIssuer.kind $extIssuer.name) }}
+{{- if or (not $extIssuer.kind) (not $extIssuer.name) }}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "netguard-chart.fullname" . }}-selfsigned
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "netguard-chart.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "netguard-chart.fullname" . }}-ca
+  namespace: {{ .Release.Namespace }}
+spec:
+  commonName: sgroups-ca
+  isCA: true
+  issuerRef:
+    group: cert-manager.io
+    kind: Issuer
+    name: {{ include "netguard-chart.fullname" . }}-selfsigned
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  secretName: {{ include "netguard-chart.fullname" . }}-ca-secret
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "netguard-chart.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  ca:
+    secretName: {{ include "netguard-chart.fullname" . }}-ca-secret
+{{- end }}
+{{- end }}

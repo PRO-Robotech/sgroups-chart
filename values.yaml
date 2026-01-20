@@ -331,6 +331,8 @@ internalTLS:
     existingIssuer:
       kind: Issuer
       name: ""
+    extraDnsNames: []
+    extraIPAddresses: []
   secret:
     # Each name of secret must contain keys named:
     # "tls.crt" - the certificate

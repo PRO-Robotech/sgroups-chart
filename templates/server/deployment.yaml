@@ -1,6 +1,6 @@
-{{- $server     := .Values.server -}}
-{{- $migration  := $server.migrationContainer -}}
-{{- $rbacproxy  := $server.rbacproxy -}}
+{{- $server         := .Values.server -}}
+{{- $migration      := $server.migrationContainer -}}
+{{- $rbacproxy      := $server.rbacproxy -}}
 {{- $certSource     := .Values.tls.certSource -}}
 {{- $certSecretName := "" -}}
 {{- if eq $certSource "certmanager" }}
@@ -8,11 +8,39 @@
 {{- else if eq $certSource "secret" }}
 {{- $certSecretName = .Values.tls.secret.server.secretName -}}
 {{- end }}
+{{- $configTLS      := $server.authn.tls -}}
+{{- $certFile       := (index $configTLS "cert-file" | default "/opt/h-bf/sgroups/tls/tls.crt") -}}
+{{- $keyFile        := (index $configTLS "key-file" | default "/opt/h-bf/sgroups/tls/tls.key") -}}
+{{- $clientCa       := (index $authnConfig.tls.client "ca-files" | default (list "/opt/h-bf/sgroups/tls/ca.crt")) -}}
 {{- $sa     := $server.serviceAccount -}}
 {{- $saName := default (printf "%s-server" (include "sgroups-chart.fullname" .)) $sa.name -}}
 {{- if not $sa.create }}
 {{- $saName = "default" -}}
 {{- end }}
+
+
+
+
+
+
+
+
+
+
+
+  config:
+    authn:
+      type: none
+      # tls:
+      #   key-file: "/opt/h-bf/sgroups/tls/tls.key"
+      #   cert-file: "/opt/h-bf/sgroups/tls/tls.crt"
+      #   client:
+      #     verify: skip
+      #     ca-files:
+      #       - "/opt/h-bf/sgroups/tls/ca.crt"
+
+
+
 
 ---
 apiVersion: apps/v1
@@ -84,6 +112,17 @@ spec:
             - mountPath: /etc/sgroups/config.yaml
               name: configfile
               subPath: config
+            {{- if $certSecretName }}
+            - mountPath: {{ $certFile | quote }}
+              name: certificate
+              subpath: tls.crt
+            - mountPath: {{ $keyFile | quote }}
+              name: certificate
+              subpath: tls.key
+            - mountPath: {{ $clientCa | quote }}
+              name: certificate
+              subpath: ca.crt
+            {{- end }}
           {{- with $server.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -96,11 +135,15 @@ spec:
           image: "{{ $rbacproxy.image.repository }}:{{ $rbacproxy.image.tag }}"
           imagePullPolicy: {{ $rbacproxy.image.pullPolicy }}
           args:
-            - --client-ca-file=/opt/h-bf/sgroups/tls/ca.crt
-            - --tls-cert-file=/opt/h-bf/sgroups/tls/tls.crt
-            - --tls-private-key-file=/opt/h-bf/sgroups/tls/tls.key
-            - --ignore-paths=/v2/*
+          {{- if $certSecretName }}
+            - --client-ca-file={{ $clientCa }}
+            - --tls-cert-file={{ $certFile }}
+            - --tls-private-key-file={{ $keyFile }}
             - --secure-listen-address=0.0.0.0:{{ $server.service.ports.ingress }}
+          {{- else }}
+            - --insecure-listen-address=0.0.0.0:{{ $server.service.ports.ingress }}
+          {{- end }}
+            - --ignore-paths=/v2/*
             - --upstream=https://sgroups-server:{{ $server.service.ports.server }}
             - --upstream-force-h2c=true
           ports:
@@ -118,6 +161,18 @@ spec:
           {{- with $rbacproxy.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if $certSecretName }}
+          volumeMounts:
+            - mountPath: {{ $certFile | quote }}
+              name: certificate
+              subpath: tls.crt
+            - mountPath: {{ $keyFile | quote }}
+              name: certificate
+              subpath: tls.key
+            - mountPath: {{ $clientCa | quote }}
+              name: certificate
+              subpath: ca.crt
           {{- end }}
       {{- end }}
       initContainers:
