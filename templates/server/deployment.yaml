@@ -1,0 +1,163 @@
+{{- $server     := .Values.server -}}
+{{- $migration  := $server.migrationContainer -}}
+{{- $rbacproxy  := $server.rbacproxy -}}
+{{- $certSource     := .Values.tls.certSource -}}
+{{- $certSecretName := "" -}}
+{{- if eq $certSource "certmanager" }}
+{{- $certSecretName = printf "%s-server" (include "sgroups-chart.fullname" .) -}}
+{{- else if eq $certSource "secret" }}
+{{- $certSecretName = .Values.tls.secret.server.secretName -}}
+{{- end }}
+{{- $sa     := $server.serviceAccount -}}
+{{- $saName := default (printf "%s-server" (include "sgroups-chart.fullname" .)) $sa.name -}}
+{{- if not $sa.create }}
+{{- $saName = "default" -}}
+{{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sgroups-chart.fullname" . }}-server
+  labels:
+    {{- include "sgroups-chart.labels" . | nindent 4 }}
+spec:
+  {{- if not $server.autoscaling.enabled }}
+  replicas: {{ $server.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "sgroups-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with $server.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "sgroups-chart.labels" . | nindent 8 }}
+        {{- with $server.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with $server.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ $saName }}
+      {{- with $server.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: server
+          {{- with $server.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ $server.image.repository }}:{{ $server.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ $server.image.pullPolicy }}
+          command:
+            - /app/bin/sgroups
+          args:
+            - --config=/etc/sgroups/config.yaml
+          envFrom:
+            - secretRef: 
+                name: "{{ include "sgroups-chart.fullname" . }}-database"
+          ports:
+            - name: server
+              containerPort: {{ $server.service.ports.server }}
+              protocol: TCP
+          {{- with $server.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $server.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $server.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /etc/sgroups/config.yaml
+              name: configfile
+              subPath: config
+          {{- with $server.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if $rbacproxy.enabled }}
+        - name: rbacproxy
+          {{- with $rbacproxy.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ $rbacproxy.image.repository }}:{{ $rbacproxy.image.tag }}"
+          imagePullPolicy: {{ $rbacproxy.image.pullPolicy }}
+          {{- with $rbacproxy.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: ingress
+              containerPort: {{ $server.service.ports.ingress }}
+              protocol: TCP
+          {{- with $rbacproxy.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $rbacproxy.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $rbacproxy.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- end }}
+      initContainers:
+        - name: goose
+          {{- with $migration.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ $migration.image.repository }}:{{ $migration.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ $migration.image.pullPolicy }}
+          {{- with $migration.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - secretRef: 
+                name: "{{ include "sgroups-chart.fullname" . }}-database"
+          {{- with $migration.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: configfile
+          configMap:
+            defaultMode: 420
+            name: {{ default (printf "%s-sgroups-config" (include "sgroups-chart.fullname" .)) $server.customConfigConfigMapName }}
+        {{- if $certSecretName }}
+        - name: certificate
+          secret:
+            defaultMode: 420
+            secretName: {{ $certSecretName }}
+        {{- end }}
+      {{- with $server.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $server.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $server.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $server.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

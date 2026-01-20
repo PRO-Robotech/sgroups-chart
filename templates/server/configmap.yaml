@@ -1,0 +1,42 @@
+{{- $server       := .Values.server -}}
+{{- $config       := $server.config -}}
+{{- $authnConfig  := $config.authn -}}
+{{- $clientCa     := (index $authnConfig.tls.client "ca-files" | default list) -}}
+
+{{- if $server.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sgroups-chart.fullname" . }}-server-config
+  labels:
+    app.kubernetes.io/component: server
+    {{- include "sgroups-chart.labels" . | nindent 4 }}
+data:
+  config: |
+    logger:
+      {{- $config.logger | toYaml | nindent 6 }}
+    metrics:
+      {{- $config.metrics | toYaml | nindent 6 }}
+    healthcheck:
+      {{- $config.healthcheck | toYaml | nindent 6 }}
+    server:
+      endpoint: tcp://0.0.0.0:{{ $server.service.ports.server }}
+    storage:
+      {{- $config.storage | toYaml | nindent 6 }}
+    authn:
+    {{- if or (eq .Values.internalTLS.certSource "none") (eq $authnConfig.type "none") }}
+      type: "none"
+      tls:
+        client:
+          verify: "skip"
+    {{- else }}
+      type: "tls"
+      tls:
+        cert-file: "/opt/h-bf/sgroups/tls/tls.crt"
+        key-file: "/opt/h-bf/sgroups/tls/tls.key"
+        client:
+          verify: {{ $authnConfig.tls.client.verify | default "skip" }}
+          ca-files: {{ $clientCa | toYaml }}
+    {{- end }}
+{{- end }}
