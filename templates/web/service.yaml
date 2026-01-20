@@ -1,15 +1,21 @@
+{{- $web := .Values.web -}}
+{{- if $webr.enabled }}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "sgroups-chart.fullname" . }}
+  name: {{ include "sgroups-chart.fullname" . }}-web
   labels:
+    app.kubernetes.io/component: web
     {{- include "sgroups-chart.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ $web.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: {{ $web.service.ports.ingress }}
+      targetPort: ingress
       protocol: TCP
-      name: http
+      name: ingress
   selector:
+    app.kubernetes.io/component: web
     {{- include "sgroups-chart.selectorLabels" . | nindent 4 }}
+{{- end }}

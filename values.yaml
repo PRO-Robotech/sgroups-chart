@@ -7,6 +7,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 server:
+  enabled: true
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
 
@@ -20,6 +21,8 @@ server:
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
+
+  env: {}
 
   # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
   serviceAccount:
@@ -43,13 +46,16 @@ server:
   podSecurityContext: {}
     # fsGroup: 2000
 
-  securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    privileged: false
+    readOnlyRootFilesystem: true
+    runAsGroup: 65532
+    runAsNonRoot: true
+    runAsUser: 65532
 
   # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
   service:
@@ -60,17 +66,14 @@ server:
       server: 9008
       ingress: 9006
 
-  resources: {}
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      ephemeral-storage: 50Mi
+      memory: 64Mi
 
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
   livenessProbe:
@@ -154,13 +157,12 @@ server:
       runAsUser: 65532
 
     resources:
-      limits:
-        cpu: 200m
-        memory: 256Mi
       requests:
-        cpu: 100m
-        ephemeral-storage: 50Mi
-        memory: 128Mi
+        memory: 32Mi
+        cpu: 10m
+      limits:
+        memory: 64Mi
+        cpu: 50m
 
   migrationContainer:
     # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
@@ -199,19 +201,25 @@ server:
         memory: 128Mi
 
 web:
+  enabled: true
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
   replicaCount: 1
 
   # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
   image:
-    repository: nginx
+    repository: sgroups/sgroups.ui
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: v4.1.6-a7f09504
 
   # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   imagePullSecrets: []
+
+  env:
+    HBF_API: http://release-name.prorobotech.ru/server
+    BASE_PREFIX: "client"
+    GRAPH_ENABLED: "false"
 
   # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
   serviceAccount:
@@ -235,20 +243,21 @@ web:
   podSecurityContext: {}
     # fsGroup: 2000
 
-  securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
+  securityContext:
+    allowPrivilegeEscalation: true
+    privileged: true
+    readOnlyRootFilesystem: false
+    runAsUser: 0
+    runAsGroup: 0
+    runAsNonRoot: false
 
   # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
   service:
     # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
     type: ClusterIP
     # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-    port: 80
+    ports:
+      ingress: 80
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -295,7 +304,11 @@ web:
 
   nodeSelector: {}
 
-  tolerations: []
+  tolerations:
+    - key: node-role.kubernetes.io/data-plane
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/in-cloud-infra
+      effect: NoSchedule
 
   affinity: {}
 
@@ -343,6 +356,7 @@ internalTLS:
       # secret name for server's tls certs
       secretName: ""
 
+externalDomain: "sgroups.example.com"
 expose:
   enabled: false
   # resourceType: allowed values [istio, ingress]
@@ -367,9 +381,7 @@ expose:
 
   # The path should end with a "/"
   path: /
-  # servicePort
-  # set incloud-web port
-  servicePort: 80
+
   tls:
     # The source of the tls certificate. Set as "certmanager", "secret"
     # or "none" and fill the information in the corresponding section

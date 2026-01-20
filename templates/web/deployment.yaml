@@ -1,78 +1,98 @@
+{{- $web    := .Values.web -}}
+{{- $sa     := $web.serviceAccount -}}
+{{- $saName := default (printf "%s-web" (include "sgroups-chart.fullname" .)) $sa.name -}}
+{{- if not $sa.create }}
+{{- $saName = "default" -}}
+{{- end }}
+
+{{- if $web.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "sgroups-chart.fullname" . }}
+  name: {{ include "sgroups-chart.fullname" . }}-web
   labels:
+    app.kubernetes.io/component: web
     {{- include "sgroups-chart.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  {{- if not $web.autoscaling.enabled }}
+  replicas: {{ $web.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
       {{- include "sgroups-chart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      {{- with $web.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "sgroups-chart.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
+        {{- with $web.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- with $web.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "sgroups-chart.serviceAccountName" . }}
-      {{- with .Values.podSecurityContext }}
+      serviceAccountName: {{ $saName }}
+      {{- with $web.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
-          {{- with .Values.securityContext }}
+        - name: web
+          {{- with $web.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ $web.image.repository }}:{{ $web.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ $web.image.pullPolicy }}
+          command:
+            - /bin/bash
+            - -c
+            - /usr/share/nginx/html/client/env.sh && exec nginx -g 'daemon off;'
+          {{- with $web.env }}
+          env:
+            {{ range $key, $value := . }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- end }}
           ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
+            - name: ingress
+              containerPort: {{ $web.service.ports.ingress }}
               protocol: TCP
-          {{- with .Values.livenessProbe }}
+          {{- with $web.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.readinessProbe }}
+          {{- with $web.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.resources }}
+          {{- with $web.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
+          {{- with $web.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.volumes }}
+      {{- with $web.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.nodeSelector }}
+      {{- with $web.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with $web.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with $web.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

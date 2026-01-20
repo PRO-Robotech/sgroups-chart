@@ -1,15 +1,27 @@
+{{- $server := .Values.server -}}
+{{- if $serverr.enabled }}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "sgroups-chart.fullname" . }}
+  name: {{ include "sgroups-chart.fullname" . }}-server
   labels:
+    app.kubernetes.io/component: server
     {{- include "sgroups-chart.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ $server.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: {{ $server.service.ports.server }}
+      targetPort: server
       protocol: TCP
-      name: http
+      name: server
+    {{- if $server.rbacproxy.enabled }}
+    - port: {{ $server.service.ports.ingress }}
+      targetPort: ingress
+      protocol: TCP
+      name: ingress
+    {{- end }}
   selector:
+    app.kubernetes.io/component: server
     {{- include "sgroups-chart.selectorLabels" . | nindent 4 }}
+{{- end }}
