@@ -15,7 +15,7 @@ metadata:
   name: {{ $istio.gateway.name }}
   namespace: {{ .Release.Namespace }}
   labels:
-  {{- include "netguard-chart.selectorLabels" . | nindent 4 }}
+  {{- include "sgroups-chart.selectorLabels" . | nindent 4 }}
   {{- with $istio.gateway.labels }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -46,7 +46,7 @@ spec:
         mode: SIMPLE
     {{ end }}
     {{ if eq $tls.certSource "certmanager" }}
-        credentialName: {{ include "netguard-chart.fullname" . }}-certificate
+        credentialName: {{ include "sgroups-chart.fullname" . }}-certificate
     {{ end }}
     {{ if eq $tls.certSource "secret" }}
         credentialName: {{ $tls.secret.secretName }}
@@ -57,10 +57,10 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: {{ include "netguard-chart.fullname" . }}
+  name: {{ include "sgroups-chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-  {{- include "netguard-chart.selectorLabels" . | nindent 4 }}
+  {{- include "sgroups-chart.selectorLabels" . | nindent 4 }}
   {{- with $istio.virtualService.labels }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -115,10 +115,10 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "netguard-chart.fullname" . }}
+  name: {{ include "sgroups-chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-  {{- include "netguard-chart.selectorLabels" . | nindent 4 }}
+  {{- include "sgroups-chart.selectorLabels" . | nindent 4 }}
   {{- with $ingress.labels }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -150,7 +150,7 @@ spec:
     - hosts:
         - "{{ .Values.externalDomain }}"
     {{ if eq $tls.certSource "certmanager" }}
-      secretName: {{ include "netguard-chart.fullname" . }}-certificate
+      secretName: {{ include "sgroups-chart.fullname" . }}-certificate
     {{ end }}
     {{ if eq $tls.certSource "secret" }}
       secretName: {{ $tls.secret.secretName }}

@@ -1,0 +1,41 @@
+{{- if (eq .Values.internalTLS.certSource "certmanager") }}
+{{- $certManager. := .Values.internalTLS.certmanager -}}
+{{- $extIssuer    := $certManager.existingIssuer -}}
+{{- $issuerKind   := "Issuer" -}}
+{{- $issuerName   := (include "sgroups-chart.fullname" .) -}}
+
+{{- if and $extIssuer.kind $extIssuer.name }}
+  {{- $issuerKind = $extIssuer.kind -}}
+  {{- $issuerName = $extIssuer.name -}}
+{{- end }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "sgroups-chart.fullname" . }}-internal
+  namespace: {{ $.Release.Namespace }}
+spec:
+  commonName: {{ include "sgroups-chart.fullname" . }}
+  dnsNames:
+    - {{ include "sgroups-chart.fullname" . }}
+    - {{ include "sgroups-chart.fullname" . }}.{{ $.Release.Namespace }}
+    - {{ include "sgroups-chart.fullname" . }}.{{ $.Release.Namespace }}.svc
+    {{- if $certManager.extraDnsNames }}
+    {{- range $certManager.extraDnsNames }}
+    - {{ . }}
+    {{- end }}
+    {{- end }}
+  {{- with $certManager.extraIPAddresses }}
+  ipAddresses:
+    {{ . | toYaml | nindent 4 }}
+  {{- end }}
+  issuerRef:
+    group: cert-manager.io
+    kind: {{ $issuerKind }}
+    name: {{ $issuerName }}
+  usages:
+    - server auth
+  secretName: {{ include "sgroups-chart.fullname" . }}-internal
+  {{- end }}
+{{- end }}

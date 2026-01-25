@@ -1,15 +1,15 @@
-{{- $extIssuer    := .Values.internalTLS.certmanager.existingIssuer -}}
+{{- $intTLS    := .Values.internalTLS -}}
+{{- $expose    := .Values.expose -}}
 
-{{- if and (eq .Values.internalTLS.certSource "certmanager") (and not $extIssuer.kind $extIssuer.name) }}
-{{- if or (not $extIssuer.kind) (not $extIssuer.name) }}
+{{- if or (eq $intTLS.certSource "certmanager") (and $expose.enabled (eq $expose.tls.certSource "certmanager")) }}
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: {{ include "netguard-chart.fullname" . }}-selfsigned
+  name: {{ include "sgroups-chart.fullname" . }}-selfsigned
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "netguard-chart.labels" . | nindent 4 }}
+    {{- include "sgroups-chart.labels" . | nindent 4 }}
 spec:
   selfSigned: {}
 
@@ -17,7 +17,7 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ include "netguard-chart.fullname" . }}-ca
+  name: {{ include "sgroups-chart.fullname" . }}-ca
   namespace: {{ .Release.Namespace }}
 spec:
   commonName: sgroups-ca
@@ -25,20 +25,19 @@ spec:
   issuerRef:
     group: cert-manager.io
     kind: Issuer
-    name: {{ include "netguard-chart.fullname" . }}-selfsigned
+    name: {{ include "sgroups-chart.fullname" . }}-selfsigned
   privateKey:
     algorithm: ECDSA
     size: 256
-  secretName: {{ include "netguard-chart.fullname" . }}-ca-secret
+  secretName: {{ include "sgroups-chart.fullname" . }}-ca-secret
 
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: {{ include "netguard-chart.fullname" . }}
+  name: {{ include "sgroups-chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
 spec:
   ca:
-    secretName: {{ include "netguard-chart.fullname" . }}-ca-secret
-{{- end }}
+    secretName: {{ include "sgroups-chart.fullname" . }}-ca-secret
 {{- end }}
