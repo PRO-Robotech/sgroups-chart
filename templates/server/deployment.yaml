@@ -130,7 +130,7 @@ spec:
           {{- else }}
             - --insecure-listen-address=0.0.0.0:{{ $server.service.ports.rbacproxy }}
           {{- end }}
-            - --ignore-paths=/{{ .Values.sgroupsApiVersion }}/*
+            - --ignore-paths=/v1/*,/v2/*
             - --upstream=http://{{ include "sgroups-chart.fullname" . }}-server:{{ $server.service.ports.server }}
             - --upstream-force-h2c=true
             - --v=10
