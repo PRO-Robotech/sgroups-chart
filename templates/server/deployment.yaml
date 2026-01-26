@@ -4,7 +4,7 @@
 {{- $certSource     := .Values.internalTLS.certSource -}}
 {{- $certSecretName := "" -}}
 {{- if eq $certSource "certmanager" }}
-{{- $certSecretName = printf "%s-internal" (include "sgroups-chart.fullname" .) -}}
+{{- $certSecretName = printf "%s-server" (include "sgroups-chart.fullname" .) -}}
 {{- else if eq $certSource "secret" }}
 {{- $certSecretName = .Values.internalTLS.secret.server.secretName -}}
 {{- end }}
