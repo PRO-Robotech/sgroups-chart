@@ -133,6 +133,7 @@ spec:
             - --ignore-paths=/{{ .Values.sgroupsApiVersion }}/*
             - --upstream=http://{{ include "sgroups-chart.fullname" . }}-server:{{ $server.service.ports.server }}
             - --upstream-force-h2c=true
+            - --v=10
           ports:
             - name: rbacproxy
               containerPort: {{ $server.service.ports.rbacproxy }}
