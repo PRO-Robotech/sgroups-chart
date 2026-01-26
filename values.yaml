@@ -6,6 +6,8 @@
 nameOverride: ""
 fullnameOverride: ""
 
+sgroupsApiVersion: v1
+
 server:
   enabled: true
   # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/

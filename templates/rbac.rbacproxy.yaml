@@ -1,3 +1,4 @@
+{{- $sgAPIVer := .Values.sgroupsApiVersion -}}
 {{- $server   := .Values.server -}}
 {{- $sa       := $server.serviceAccount -}}
 {{- $saName   := default (printf "%s-server" (include "sgroups-chart.fullname" .)) $sa.name -}}
@@ -43,27 +44,27 @@ metadata:
   name: {{ include "sgroups-chart.fullname" . }}-nonresource-system
 rules:
 - nonResourceURLs:
-  - /hbf.v2.sgroups.SecGroupService/Sync
-  - /hbf.v2.sgroups.SecGroupService/SyncStatus
-  - /hbf.v2.sgroups.SecGroupService/SyncStatuses
-  - /hbf.v2.sgroups.SecGroupService/ListNetworks
-  - /hbf.v2.sgroups.SecGroupService/ListSecurityGroups
-  - /hbf.v2.sgroups.SecGroupService/ListHosts
-  - /hbf.v2.sgroups.SecGroupService/ListServices
-  - /hbf.v2.sgroups.SecGroupService/ListSvcSvcRules
-  - /hbf.v2.sgroups.SecGroupService/ListSvcFqdnRules
-  - /hbf.v2.sgroups.SecGroupService/GetSgSubnets
-  - /hbf.v2.sgroups.SecGroupService/GetSecGroupForAddress
-  - /hbf.v2.sgroups.SecGroupService/GetSecGroupForHost
-  - /hbf.v2.sgroups.SecGroupService/FindSgSgRules
-  - /hbf.v2.sgroups.SecGroupService/FindFqdnRules
-  - /hbf.v2.sgroups.SecGroupService/FindSgIcmpRules
-  - /hbf.v2.sgroups.SecGroupService/FindSgSgIcmpRules
-  - /hbf.v2.sgroups.SecGroupService/FindIECidrSgRules
-  - /hbf.v2.sgroups.SecGroupService/FindIESgSgRules
-  - /hbf.v2.sgroups.SecGroupService/FindIESgSgIcmpRules
-  - /hbf.v2.sgroups.SecGroupService/FindIECidrSgIcmpRules
-  - /hbf.v2.sgroups.SecGroupService/UpdHostIPSet
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/Sync
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/SyncStatus
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/SyncStatuses
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListNetworks
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListSecurityGroups
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListHosts
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListServices
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListSvcSvcRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListSvcFqdnRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/GetSgSubnets
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/GetSecGroupForAddress
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/GetSecGroupForHost
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindSgSgRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindFqdnRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindSgIcmpRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindSgSgIcmpRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindIECidrSgRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindIESgSgRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindIESgSgIcmpRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindIECidrSgIcmpRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/UpdHostIPSet
   - /grpc.health.v1.Health/Check
   - /grpc.health.v1.Health/Watch
   verbs: ["create"]
@@ -75,27 +76,27 @@ metadata:
   name: {{ include "sgroups-chart.fullname" . }}-nonresource-client
 rules:
 - nonResourceURLs:
-  # - /hbf.v2.sgroups.SecGroupService/Sync
-  - /hbf.v2.sgroups.SecGroupService/SyncStatus
-  - /hbf.v2.sgroups.SecGroupService/SyncStatuses
-  - /hbf.v2.sgroups.SecGroupService/ListNetworks
-  - /hbf.v2.sgroups.SecGroupService/ListSecurityGroups
-  - /hbf.v2.sgroups.SecGroupService/ListHosts
-  - /hbf.v2.sgroups.SecGroupService/ListServices
-  - /hbf.v2.sgroups.SecGroupService/ListSvcSvcRules
-  - /hbf.v2.sgroups.SecGroupService/ListSvcFqdnRules
-  - /hbf.v2.sgroups.SecGroupService/GetSgSubnets
-  - /hbf.v2.sgroups.SecGroupService/GetSecGroupForAddress
-  - /hbf.v2.sgroups.SecGroupService/GetSecGroupForHost
-  - /hbf.v2.sgroups.SecGroupService/FindSgSgRules
-  - /hbf.v2.sgroups.SecGroupService/FindFqdnRules
-  - /hbf.v2.sgroups.SecGroupService/FindSgIcmpRules
-  - /hbf.v2.sgroups.SecGroupService/FindSgSgIcmpRules
-  - /hbf.v2.sgroups.SecGroupService/FindIECidrSgRules
-  - /hbf.v2.sgroups.SecGroupService/FindIESgSgRules
-  - /hbf.v2.sgroups.SecGroupService/FindIESgSgIcmpRules
-  - /hbf.v2.sgroups.SecGroupService/FindIECidrSgIcmpRules
-  - /hbf.v2.sgroups.SecGroupService/UpdHostIPSet
+  # - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/Sync
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/SyncStatus
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/SyncStatuses
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListNetworks
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListSecurityGroups
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListHosts
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListServices
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListSvcSvcRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/ListSvcFqdnRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/GetSgSubnets
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/GetSecGroupForAddress
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/GetSecGroupForHost
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindSgSgRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindFqdnRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindSgIcmpRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindSgSgIcmpRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindIECidrSgRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindIESgSgRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindIESgSgIcmpRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/FindIECidrSgIcmpRules
+  - /hbf.{{ $sgAPIVer }}.sgroups.SecGroupService/UpdHostIPSet
   - /grpc.health.v1.Health/Check
   - /grpc.health.v1.Health/Watch
   verbs: ["create"]
