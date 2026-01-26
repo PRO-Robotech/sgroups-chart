@@ -175,7 +175,7 @@ server:
       - /app/bin/goose
       - -table=sgroups_db_ver
       - postgres
-      - $(DATABASE_CONNECTION_URL)
+      - $(SG_STORAGE_POSTGRES_URL)
       - up
 
     securityContext:
