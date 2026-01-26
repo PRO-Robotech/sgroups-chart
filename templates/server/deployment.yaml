@@ -42,6 +42,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
+        app.kubernetes.io/component: server
         {{- include "sgroups-chart.labels" . | nindent 8 }}
         {{- with $server.podLabels }}
         {{- toYaml . | nindent 8 }}
