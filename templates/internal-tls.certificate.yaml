@@ -39,5 +39,8 @@ spec:
     name: {{ $issuerName }}
   usages:
     - server auth
+  subject:
+    organizations:
+      - hbf:workers
   secretName: {{ include "sgroups-chart.fullname" . }}-internal
 {{- end }}
