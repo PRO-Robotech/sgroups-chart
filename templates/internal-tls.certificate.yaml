@@ -21,6 +21,9 @@ spec:
     - {{ include "sgroups-chart.fullname" . }}
     - {{ include "sgroups-chart.fullname" . }}.{{ $.Release.Namespace }}
     - {{ include "sgroups-chart.fullname" . }}.{{ $.Release.Namespace }}.svc
+    - {{ include "sgroups-chart.fullname" . }}-server
+    - {{ include "sgroups-chart.fullname" . }}-server.{{ $.Release.Namespace }}
+    - {{ include "sgroups-chart.fullname" . }}-server.{{ $.Release.Namespace }}.svc
     {{- if $certManager.extraDnsNames }}
     {{- range $certManager.extraDnsNames }}
     - {{ . }}
