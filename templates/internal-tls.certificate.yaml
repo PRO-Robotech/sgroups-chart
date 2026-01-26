@@ -1,5 +1,5 @@
 {{- if (eq .Values.internalTLS.certSource "certmanager") }}
-{{- $certManager. := .Values.internalTLS.certmanager -}}
+{{- $certManager  := .Values.internalTLS.certmanager -}}
 {{- $extIssuer    := $certManager.existingIssuer -}}
 {{- $issuerKind   := "Issuer" -}}
 {{- $issuerName   := (include "sgroups-chart.fullname" .) -}}
@@ -14,7 +14,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "sgroups-chart.fullname" . }}-internal
-  namespace: {{ $.Release.Namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   commonName: {{ include "sgroups-chart.fullname" . }}
   dnsNames:
@@ -37,5 +37,4 @@ spec:
   usages:
     - server auth
   secretName: {{ include "sgroups-chart.fullname" . }}-internal
-  {{- end }}
 {{- end }}

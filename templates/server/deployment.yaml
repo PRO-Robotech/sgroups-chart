@@ -4,7 +4,7 @@
 {{- $certSource     := .Values.internalTLS.certSource -}}
 {{- $certSecretName := "" -}}
 {{- if eq $certSource "certmanager" }}
-{{- $certSecretName = printf "%s-server" (include "sgroups-chart.fullname" .) -}}
+{{- $certSecretName = printf "%s-internal" (include "sgroups-chart.fullname" .) -}}
 {{- else if eq $certSource "secret" }}
 {{- $certSecretName = .Values.internalTLS.secret.server.secretName -}}
 {{- end }}
@@ -24,6 +24,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "sgroups-chart.fullname" . }}-server
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/component: server
     {{- include "sgroups-chart.labels" . | nindent 4 }}
@@ -100,13 +101,13 @@ spec:
             {{- if $certSecretName }}
             - mountPath: {{ $certFile | quote }}
               name: certificate
-              subpath: tls.crt
+              subPath: tls.crt
             - mountPath: {{ $keyFile | quote }}
               name: certificate
-              subpath: tls.key
+              subPath: tls.key
             - mountPath: {{ $clientCa | quote }}
               name: certificate
-              subpath: ca.crt
+              subPath: ca.crt
             {{- end }}
           {{- with $server.volumeMounts }}
             {{- toYaml . | nindent 12 }}
@@ -124,16 +125,16 @@ spec:
             - --client-ca-file={{ $clientCa }}
             - --tls-cert-file={{ $certFile }}
             - --tls-private-key-file={{ $keyFile }}
-            - --secure-listen-address=0.0.0.0:{{ $server.service.ports.ingress }}
+            - --secure-listen-address=0.0.0.0:{{ $server.service.ports.rbacproxy }}
           {{- else }}
-            - --insecure-listen-address=0.0.0.0:{{ $server.service.ports.ingress }}
+            - --insecure-listen-address=0.0.0.0:{{ $server.service.ports.rbacproxy }}
           {{- end }}
             - --ignore-paths=/v2/*
             - --upstream=https://sgroups-server:{{ $server.service.ports.server }}
             - --upstream-force-h2c=true
           ports:
-            - name: ingress
-              containerPort: {{ $server.service.ports.ingress }}
+            - name: rbacproxy
+              containerPort: {{ $server.service.ports.rbacproxy }}
               protocol: TCP
           {{- with $rbacproxy.livenessProbe }}
           livenessProbe:
@@ -151,13 +152,13 @@ spec:
           volumeMounts:
             - mountPath: {{ $certFile | quote }}
               name: certificate
-              subpath: tls.crt
+              subPath: tls.crt
             - mountPath: {{ $keyFile | quote }}
               name: certificate
-              subpath: tls.key
+              subPath: tls.key
             - mountPath: {{ $clientCa | quote }}
               name: certificate
-              subpath: ca.crt
+              subPath: ca.crt
           {{- end }}
       {{- end }}
       initContainers:
@@ -183,7 +184,7 @@ spec:
         - name: configfile
           configMap:
             defaultMode: 420
-            name: {{ default (printf "%s-sgroups-config" (include "sgroups-chart.fullname" .)) $server.customConfigConfigMapName }}
+            name: {{ default (printf "%s-server-config" (include "sgroups-chart.fullname" .)) $server.customConfigConfigMapName }}
         {{- if $certSecretName }}
         - name: certificate
           secret:

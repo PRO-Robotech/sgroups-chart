@@ -46,7 +46,7 @@ spec:
         mode: SIMPLE
     {{ end }}
     {{ if eq $tls.certSource "certmanager" }}
-        credentialName: {{ include "sgroups-chart.fullname" . }}-certificate
+        credentialName: {{ include "sgroups-chart.fullname" . }}-expose
     {{ end }}
     {{ if eq $tls.certSource "secret" }}
         credentialName: {{ $tls.secret.secretName }}
@@ -150,7 +150,7 @@ spec:
     - hosts:
         - "{{ .Values.externalDomain }}"
     {{ if eq $tls.certSource "certmanager" }}
-      secretName: {{ include "sgroups-chart.fullname" . }}-certificate
+      secretName: {{ include "sgroups-chart.fullname" . }}-expose
     {{ end }}
     {{ if eq $tls.certSource "secret" }}
       secretName: {{ $tls.secret.secretName }}

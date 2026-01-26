@@ -10,6 +10,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "sgroups-chart.fullname" . }}-web
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/component: web
     {{- include "sgroups-chart.labels" . | nindent 4 }}

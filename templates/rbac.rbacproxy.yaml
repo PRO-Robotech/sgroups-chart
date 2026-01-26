@@ -1,0 +1,126 @@
+{{- if and .Values.server.enabled .Values.server.rbacproxy.enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "sgroups-chart.fullname" . }}-rbacproxy-tokenreview
+rules:
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "sgroups-chart.fullname" . }}-rbacproxy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "sgroups-chart.fullname" . }}-rbacproxy-tokenreview
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "sgroups-chart.fullname" . }}-server
+    namespace: {{ $.Release.Namespace }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "sgroups-chart.fullname" . }}-nonresource-system
+rules:
+- nonResourceURLs:
+  - /hbf.v2.sgroups.SecGroupService/Sync
+  - /hbf.v2.sgroups.SecGroupService/SyncStatus
+  - /hbf.v2.sgroups.SecGroupService/SyncStatuses
+  - /hbf.v2.sgroups.SecGroupService/ListNetworks
+  - /hbf.v2.sgroups.SecGroupService/ListSecurityGroups
+  - /hbf.v2.sgroups.SecGroupService/ListHosts
+  - /hbf.v2.sgroups.SecGroupService/ListServices
+  - /hbf.v2.sgroups.SecGroupService/ListSvcSvcRules
+  - /hbf.v2.sgroups.SecGroupService/ListSvcFqdnRules
+  - /hbf.v2.sgroups.SecGroupService/GetSgSubnets
+  - /hbf.v2.sgroups.SecGroupService/GetSecGroupForAddress
+  - /hbf.v2.sgroups.SecGroupService/GetSecGroupForHost
+  - /hbf.v2.sgroups.SecGroupService/FindSgSgRules
+  - /hbf.v2.sgroups.SecGroupService/FindFqdnRules
+  - /hbf.v2.sgroups.SecGroupService/FindSgIcmpRules
+  - /hbf.v2.sgroups.SecGroupService/FindSgSgIcmpRules
+  - /hbf.v2.sgroups.SecGroupService/FindIECidrSgRules
+  - /hbf.v2.sgroups.SecGroupService/FindIESgSgRules
+  - /hbf.v2.sgroups.SecGroupService/FindIESgSgIcmpRules
+  - /hbf.v2.sgroups.SecGroupService/FindIECidrSgIcmpRules
+  - /hbf.v2.sgroups.SecGroupService/UpdHostIPSet
+  - /grpc.health.v1.Health/Check
+  - /grpc.health.v1.Health/Watch
+  verbs: ["create"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "sgroups-chart.fullname" . }}-nonresource-client
+rules:
+- nonResourceURLs:
+  # - /hbf.v2.sgroups.SecGroupService/Sync
+  - /hbf.v2.sgroups.SecGroupService/SyncStatus
+  - /hbf.v2.sgroups.SecGroupService/SyncStatuses
+  - /hbf.v2.sgroups.SecGroupService/ListNetworks
+  - /hbf.v2.sgroups.SecGroupService/ListSecurityGroups
+  - /hbf.v2.sgroups.SecGroupService/ListHosts
+  - /hbf.v2.sgroups.SecGroupService/ListServices
+  - /hbf.v2.sgroups.SecGroupService/ListSvcSvcRules
+  - /hbf.v2.sgroups.SecGroupService/ListSvcFqdnRules
+  - /hbf.v2.sgroups.SecGroupService/GetSgSubnets
+  - /hbf.v2.sgroups.SecGroupService/GetSecGroupForAddress
+  - /hbf.v2.sgroups.SecGroupService/GetSecGroupForHost
+  - /hbf.v2.sgroups.SecGroupService/FindSgSgRules
+  - /hbf.v2.sgroups.SecGroupService/FindFqdnRules
+  - /hbf.v2.sgroups.SecGroupService/FindSgIcmpRules
+  - /hbf.v2.sgroups.SecGroupService/FindSgSgIcmpRules
+  - /hbf.v2.sgroups.SecGroupService/FindIECidrSgRules
+  - /hbf.v2.sgroups.SecGroupService/FindIESgSgRules
+  - /hbf.v2.sgroups.SecGroupService/FindIESgSgIcmpRules
+  - /hbf.v2.sgroups.SecGroupService/FindIECidrSgIcmpRules
+  - /hbf.v2.sgroups.SecGroupService/UpdHostIPSet
+  - /grpc.health.v1.Health/Check
+  - /grpc.health.v1.Health/Watch
+  verbs: ["create"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "sgroups-chart.fullname" . }}-nonresource-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "sgroups-chart.fullname" . }}-nonresource-system
+subjects:
+- kind: Group
+  name: "hbf:masters"
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "sgroups-chart.fullname" . }}-nonresource-client
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "sgroups-chart.fullname" . }}-nonresource-client
+subjects:
+- kind: Group
+  name: "hbf:workers"
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

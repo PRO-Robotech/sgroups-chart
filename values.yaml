@@ -64,7 +64,7 @@ server:
     # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
     ports:
       server: 9008
-      ingress: 9006
+      rbacproxy: 9006
 
   resources:
     limits:
@@ -76,14 +76,8 @@ server:
       memory: 64Mi
 
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-  livenessProbe:
-    httpGet:
-      path: /
-      port: http
-  readinessProbe:
-    httpGet:
-      path: /
-      port: http
+  livenessProbe: {}
+  readinessProbe: {}
 
   # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
   autoscaling:
@@ -107,8 +101,12 @@ server:
   #   readOnly: true
 
   nodeSelector: {}
-
-  tolerations: []
+  
+  tolerations:
+    - key: node-role.kubernetes.io/data-plane
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/in-cloud-infra
+      effect: NoSchedule
 
   affinity: {}
 
@@ -272,14 +270,8 @@ web:
     #   memory: 128Mi
 
   # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-  livenessProbe:
-    httpGet:
-      path: /
-      port: http
-  readinessProbe:
-    httpGet:
-      path: /
-      port: http
+  livenessProbe: {}
+  readinessProbe: {}
 
   # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
   autoscaling:
@@ -303,7 +295,7 @@ web:
   #   readOnly: true
 
   nodeSelector: {}
-
+  
   tolerations:
     - key: node-role.kubernetes.io/data-plane
       effect: NoSchedule

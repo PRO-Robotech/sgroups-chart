@@ -5,6 +5,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "sgroups-chart.fullname" . }}-server
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/component: server
     {{- include "sgroups-chart.labels" . | nindent 4 }}
@@ -16,10 +17,10 @@ spec:
       protocol: TCP
       name: server
     {{- if $server.rbacproxy.enabled }}
-    - port: {{ $server.service.ports.ingress }}
-      targetPort: ingress
+    - port: {{ $server.service.ports.rbacproxy }}
+      targetPort: rbacproxy
       protocol: TCP
-      name: ingress
+      name: rbacproxy
     {{- end }}
   selector:
     app.kubernetes.io/component: server

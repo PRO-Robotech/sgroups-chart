@@ -6,6 +6,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "sgroups-chart.fullname" . }}-server
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/component: server
     {{- include "sgroups-chart.labels" . | nindent 4 }}
