@@ -44,6 +44,20 @@ metadata:
   name: {{ include "sgroups-chart.fullname" . }}-nonresource-system
 rules:
 - nonResourceURLs:
+  - /hbf.v1.sgroups.SecGroupService/Sync
+  - /hbf.v2.sgroups.SecGroupService/Sync
+
+  - /grpc.health.v1.Health/Check
+  - /grpc.health.v1.Health/Watch
+  verbs: ["create"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "sgroups-chart.fullname" . }}-nonresource-client
+rules:
+- nonResourceURLs:
   - /hbf.v1.sgroups.SecGroupService/SyncStatus
   - /hbf.v1.sgroups.SecGroupService/SyncStatuses
   - /hbf.v1.sgroups.SecGroupService/ListNetworks
@@ -88,17 +102,6 @@ rules:
 
   - /grpc.health.v1.Health/Check
   - /grpc.health.v1.Health/Watch
-  verbs: ["create"]
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: {{ include "sgroups-chart.fullname" . }}-nonresource-client
-rules:
-- nonResourceURLs:
-  - /hbf.v1.sgroups.SecGroupService/SyncStatus
-  - /hbf.v2.sgroups.SecGroupService/SyncStatus
   verbs: ["create"]
 
 ---
