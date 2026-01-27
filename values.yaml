@@ -120,6 +120,8 @@ server:
     server:
       endpoint: tcp://0.0.0.0:9008
       graceful-shutdown: 30s
+      additional-api-paths:
+        - hbf.v2.sgroups.SecGroupService
       # api-path-prefix: "apis/sgroups.io/v1"
     storage:
       type: postgres
