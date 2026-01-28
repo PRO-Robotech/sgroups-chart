@@ -64,7 +64,7 @@ spec:
           {{- end }}
           ports:
             - name: ingress
-              containerPort: {{ $web.service.ports.ingress }}
+              containerPort: {{ $web.service.ports.ingress.port }}
               protocol: TCP
           {{- with $web.livenessProbe }}
           livenessProbe:
