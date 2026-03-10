@@ -4,7 +4,7 @@
 {{- $certSource     := .Values.internalTLS.certSource -}}
 {{- $certSecretName := "" -}}
 {{- if eq $certSource "certmanager" }}
-{{- $certSecretName = printf "%s-internal" (include "sgroups-chart.fullname" .) -}}
+{{- $certSecretName = printf "%s-server" (include "sgroups-chart.fullname" .) -}}
 {{- else if eq $certSource "secret" }}
 {{- $certSecretName = .Values.internalTLS.secret.server.secretName -}}
 {{- end }}
@@ -42,6 +42,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
+        app.kubernetes.io/component: server
         {{- include "sgroups-chart.labels" . | nindent 8 }}
         {{- with $server.podLabels }}
         {{- toYaml . | nindent 8 }}
@@ -80,7 +81,7 @@ spec:
                 name: "{{ include "sgroups-chart.fullname" . }}-database"
           ports:
             - name: server
-              containerPort: {{ $server.service.ports.server }}
+              containerPort: {{ $server.service.ports.server.port }}
               protocol: TCP
           {{- with $server.livenessProbe }}
           livenessProbe:
@@ -125,16 +126,17 @@ spec:
             - --client-ca-file={{ $clientCa }}
             - --tls-cert-file={{ $certFile }}
             - --tls-private-key-file={{ $keyFile }}
-            - --secure-listen-address=0.0.0.0:{{ $server.service.ports.rbacproxy }}
+            - --secure-listen-address=0.0.0.0:{{ $server.service.ports.rbacproxy.port }}
           {{- else }}
-            - --insecure-listen-address=0.0.0.0:{{ $server.service.ports.rbacproxy }}
+            - --insecure-listen-address=0.0.0.0:{{ $server.service.ports.rbacproxy.port }}
           {{- end }}
-            - --ignore-paths=/v2/*
-            - --upstream=https://sgroups-server:{{ $server.service.ports.server }}
+            - --ignore-paths=/v1/*,/v2/*
+            - --upstream=http://{{ include "sgroups-chart.fullname" . }}-server:{{ $server.service.ports.server.port }}
             - --upstream-force-h2c=true
+            - --v=10
           ports:
             - name: rbacproxy
-              containerPort: {{ $server.service.ports.rbacproxy }}
+              containerPort: {{ $server.service.ports.rbacproxy.port }}
               protocol: TCP
           {{- with $rbacproxy.livenessProbe }}
           livenessProbe:

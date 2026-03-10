@@ -40,8 +40,8 @@ spec:
   commonName: "{{ .Release.Namespace }}-server"
   usages:
     - server auth
-    - client auth
-    - signing
-    - key encipherment
+  subject:
+    organizations:
+      - hbf:workers
   secretName: {{ include "sgroups-chart.fullname" . }}-server
 {{- end }}

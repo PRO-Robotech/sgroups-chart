@@ -12,15 +12,25 @@ metadata:
 spec:
   type: {{ $server.service.type }}
   ports:
-    - port: {{ $server.service.ports.server }}
+    {{- with $server.service.ports.server }}
+    - port: {{ .port }}
       targetPort: server
       protocol: TCP
       name: server
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+    {{- end }}
     {{- if $server.rbacproxy.enabled }}
-    - port: {{ $server.service.ports.rbacproxy }}
+    {{- with $server.service.ports.rbacproxy }}
+    - port: {{ .port }}
       targetPort: rbacproxy
       protocol: TCP
       name: rbacproxy
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+    {{- end }}
     {{- end }}
   selector:
     app.kubernetes.io/component: server

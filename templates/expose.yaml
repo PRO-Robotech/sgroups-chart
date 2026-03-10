@@ -93,7 +93,7 @@ spec:
         - destination:
             host: {{ include "sgroups-chart.fullname" . }}-web
             port:
-              number: {{ $web.service.ports.ingress }}
+              number: {{ $web.service.ports.ingress.port }}
 
     - name: server
       match:
@@ -105,11 +105,7 @@ spec:
         - destination:
             host: {{ include "sgroups-chart.fullname" . }}-server
             port:
-              {{- if $server.rbacproxy.enabled }}
-              number: {{ $server.service.ports.rbacproxy }}
-              {{- else }}
-              number: {{ $server.service.ports.server }}
-              {{- end }}
+              number: {{ $server.service.ports.server.port }}
   {{ else if eq $expose.resourceType "ingress" }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -166,7 +162,7 @@ spec:
               service:
                 name: {{ include "sgroups-chart.fullname" . }}-web
                 port:
-                  number: {{ $web.service.ports.ingress }}
+                  number: {{ $web.service.ports.ingress.port }}
 
           - path: {{ $expose.path }}server/
             pathType: Prefix
@@ -174,10 +170,6 @@ spec:
               service:
                 name: {{ include "sgroups-chart.fullname" . }}-server
                 port:
-                  {{- if $server.rbacproxy.enabled -}}
-                  number: {{ $server.service.ports.rbacproxy }}
-                  {{- else -}}
-                  number: {{ $server.service.ports.server }}
-                  {{- end }}
+                  number: {{ $server.service.ports.server.port }}
   {{- end }}
 {{- end }}

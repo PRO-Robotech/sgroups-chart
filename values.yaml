@@ -63,8 +63,11 @@ server:
     type: LoadBalancer
     # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
     ports:
-      server: 9008
-      rbacproxy: 9006
+      server:
+        port: 9008
+      rbacproxy:
+        port: 9006
+        # nodePort: 32006
 
   resources:
     limits:
@@ -120,6 +123,8 @@ server:
     server:
       endpoint: tcp://0.0.0.0:9008
       graceful-shutdown: 30s
+      additional-api-paths:
+        - hbf.v2.sgroups.SecGroupService
       # api-path-prefix: "apis/sgroups.io/v1"
     storage:
       type: postgres
@@ -175,7 +180,7 @@ server:
       - /app/bin/goose
       - -table=sgroups_db_ver
       - postgres
-      - $(DATABASE_CONNECTION_URL)
+      - $(SG_STORAGE_POSTGRES_URL)
       - up
 
     securityContext:
@@ -255,7 +260,9 @@ web:
     type: ClusterIP
     # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
     ports:
-      ingress: 80
+      ingress: 
+        port: 80
+        # nodePort: 32080
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious

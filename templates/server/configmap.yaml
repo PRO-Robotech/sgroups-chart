@@ -25,7 +25,7 @@ data:
     healthcheck:
       {{- $config.healthcheck | toYaml | nindent 6 }}
     server:
-      endpoint: tcp://0.0.0.0:{{ $server.service.ports.server }}
+      endpoint: tcp://0.0.0.0:{{ $server.service.ports.server.port }}
     storage:
       {{- $config.storage | toYaml | nindent 6 }}
     authn:
