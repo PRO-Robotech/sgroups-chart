@@ -65,6 +65,7 @@ rules:
   - /hbf.v1.sgroups.SecGroupService/ListHosts
   - /hbf.v1.sgroups.SecGroupService/ListServices
   - /hbf.v1.sgroups.SecGroupService/ListSvcSvcRules
+  - /hbf.v1.sgroups.SecGroupService/ListIECidrSvcRules
   - /hbf.v1.sgroups.SecGroupService/ListSvcFqdnRules
   - /hbf.v1.sgroups.SecGroupService/GetSgSubnets
   - /hbf.v1.sgroups.SecGroupService/GetSecGroupForAddress
@@ -78,6 +79,7 @@ rules:
   - /hbf.v1.sgroups.SecGroupService/FindIESgSgIcmpRules
   - /hbf.v1.sgroups.SecGroupService/FindIECidrSgIcmpRules
   - /hbf.v1.sgroups.SecGroupService/UpdHostIPSet
+  - /hbf.v1.sgroups.SecGroupService/UpdHostInfo
 
   - /hbf.v2.sgroups.SecGroupService/SyncStatus
   - /hbf.v2.sgroups.SecGroupService/SyncStatuses
@@ -86,6 +88,7 @@ rules:
   - /hbf.v2.sgroups.SecGroupService/ListHosts
   - /hbf.v2.sgroups.SecGroupService/ListServices
   - /hbf.v2.sgroups.SecGroupService/ListSvcSvcRules
+  - /hbf.v2.sgroups.SecGroupService/ListIECidrSvcRules
   - /hbf.v2.sgroups.SecGroupService/ListSvcFqdnRules
   - /hbf.v2.sgroups.SecGroupService/GetSgSubnets
   - /hbf.v2.sgroups.SecGroupService/GetSecGroupForAddress
@@ -99,9 +102,11 @@ rules:
   - /hbf.v2.sgroups.SecGroupService/FindIESgSgIcmpRules
   - /hbf.v2.sgroups.SecGroupService/FindIECidrSgIcmpRules
   - /hbf.v2.sgroups.SecGroupService/UpdHostIPSet
+  - /hbf.v2.sgroups.SecGroupService/UpdHostInfo
 
   - /grpc.health.v1.Health/Check
   - /grpc.health.v1.Health/Watch
+
   verbs: ["create"]
 
 ---
