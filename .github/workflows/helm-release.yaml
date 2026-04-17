@@ -36,7 +36,7 @@ jobs:
             VERSION="${NAME}-${SHORT_SHA}"
           else
             NAME="${BRANCH}"
-            VERSION="${NAME}-${SHORT_SHA}"
+            VERSION="0.0.0-${NAME}-${SHORT_SHA}"
           fi
 
           echo "Using chart version: $VERSION"
