@@ -35,8 +35,8 @@ jobs:
             NAME="${BRANCH#release/}"
             VERSION="${NAME}-${SHORT_SHA}"
           else
-            echo "Unsupported branch: $BRANCH"
-            exit 1
+            NAME="${BRANCH}"
+            VERSION="${NAME}-${SHORT_SHA}"
           fi
 
           echo "Using chart version: $VERSION"
